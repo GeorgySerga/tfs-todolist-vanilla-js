@@ -28,7 +28,7 @@ var todoList = [
 ];
 
 // функция по генерации элементов
-function addTodoFromTemplate(todo) {
+function createTodoNodeFromTemplate(todo) {
     var newElement = templateContainer.querySelector('.task').cloneNode(true);
     newElement.querySelector('.task__name').textContent = todo.name;
     setTodoStatusClassName(newElement, todo.status === 'todo');
@@ -74,10 +74,6 @@ function deleteTodo(element) {
 }
 
 function onInputKeydown(event) {
-    if (event.keyCode !== 13) {
-        return;
-    }
-
     var ENTER_KEYCODE = 13;
     if (event.keyCode !== ENTER_KEYCODE) {
         return;
@@ -90,7 +86,7 @@ function onInputKeydown(event) {
     }
 
     var todo = createNewTodo(todoName);
-    insertTodoElement(addTodoFromTemplate(todo));
+    insertTodoElement(createTodoNodeFromTemplate(todo));
     inputElement.value = '';
 }
 
@@ -110,7 +106,7 @@ function createNewTodo(name) {
 }
 
 todoList
-    .map(addTodoFromTemplate)
+    .map(createTodoNodeFromTemplate)
     .forEach(insertTodoElement);
 
 listElement.addEventListener('click', onListClick);
