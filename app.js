@@ -11,19 +11,19 @@ var templateContainer = 'content' in templateElement ? templateElement.content :
 var todoList = [
     {
         name: 'Позвонить в сервис',
-        status: 'todo'
+        status: true
     },
     {
         name: 'Купить хлеб',
-        status: 'done'
+        status: false
     },
     {
         name: 'Захватить мир',
-        status: 'todo'
+        status: true
     },
     {
         name: 'Добавить тудушку в список',
-        status: 'todo'
+        status: true
     }
 ];
 
@@ -31,7 +31,7 @@ var todoList = [
 function createTodoNodeFromTemplate(todo) {
     var newElement = templateContainer.querySelector('.task').cloneNode(true);
     newElement.querySelector('.task__name').textContent = todo.name;
-    setTodoStatusClassName(newElement, todo.status === 'todo');
+    setTodoStatusClassName(newElement, todo.status);
 
     return newElement;
 }
@@ -54,6 +54,8 @@ function onListClick(event) {
         element = target.parentNode;
         deleteTodo(element);
     }
+
+    displayListStats();
 }
 
 function isStatusBtn(target) {
@@ -67,10 +69,22 @@ function isDeleteBtn(target) {
 function changeTodoStatus(element) {
     var isTodo = element.classList.contains('task_todo');
     setTodoStatusClassName(element, !isTodo);
+
+    var todoName = element.querySelector('.task__name').textContent;
+    todoList.forEach(function(item) {
+        if (item.name === todoName) {
+            item.status = !isTodo;
+        }
+    });
 }
 
 function deleteTodo(element) {
     listElement.removeChild(element);
+
+    var todoName = element.querySelector('.task__name').textContent;
+    todoList = todoList.filter(function(item) {
+        return item.name !== todoName;
+    });
 }
 
 function onInputKeydown(event) {
@@ -88,6 +102,13 @@ function onInputKeydown(event) {
     var todo = createNewTodo(todoName);
     insertTodoElement(createTodoNodeFromTemplate(todo));
     inputElement.value = '';
+
+    todoList.unshift({
+        name: todoName,
+        status: true
+    });
+
+    displayListStats();
 }
 
 function checkIfTodoAlreadyExists(todoName) {
@@ -101,7 +122,7 @@ function checkIfTodoAlreadyExists(todoName) {
 function createNewTodo(name) {
     return {
         name: name,
-        status: 'todo'
+        status: true
     }
 }
 
@@ -115,7 +136,6 @@ var inputElement = document.querySelector('.add-task__input');
 inputElement.addEventListener('keydown', onInputKeydown);
 
 // Задача:
-// создайте статистику
 // добавить возможность переключения между статусами
 
 function insertTodoElement(elem) {
@@ -124,4 +144,26 @@ function insertTodoElement(elem) {
     } else {
         listElement.appendChild(elem);
     }
+}
+
+function computeListStats() {
+    var allTasksCount = todoList.length;
+    var todoTasksCount = todoList.reduce(function(count, item) {
+        return count + Number(item.status);
+    }, 0);
+    var doneTasksCount = allTasksCount - todoTasksCount;
+    return {
+        all: allTasksCount,
+        done: doneTasksCount,
+        todo: todoTasksCount
+    };
+}
+
+displayListStats();
+function displayListStats() {
+    var stats = computeListStats();
+    var statisticsContainer = document.querySelector('.statistic');
+    statisticsContainer.querySelector('.statistic__total').textContent = stats.all;
+    statisticsContainer.querySelector('.statistic__done').textContent = stats.done;
+    statisticsContainer.querySelector('.statistic__left').textContent = stats.todo;
 }
