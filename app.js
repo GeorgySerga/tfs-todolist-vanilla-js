@@ -7,6 +7,9 @@ var itemElementList = listElement.children;
 var templateElement = document.getElementById('todoTemplate');
 var templateContainer = 'content' in templateElement ? templateElement.content : templateElement;
 
+var filtersElement = document.querySelector('.filters');
+filtersElement.addEventListener('click', onFiltersClick);
+
 // сформируем задачки
 var todoList = [
     {
@@ -55,7 +58,7 @@ function onListClick(event) {
         deleteTodo(element);
     }
 
-    displayListStats();
+    drawListInfo();
 }
 
 function isStatusBtn(target) {
@@ -103,12 +106,10 @@ function onInputKeydown(event) {
     insertTodoElement(createTodoNodeFromTemplate(todo));
     inputElement.value = '';
 
-    todoList.unshift({
+    todoList.push({
         name: todoName,
         status: true
     });
-
-    displayListStats();
 }
 
 function checkIfTodoAlreadyExists(todoName) {
@@ -126,17 +127,18 @@ function createNewTodo(name) {
     }
 }
 
-todoList
-    .map(createTodoNodeFromTemplate)
-    .forEach(insertTodoElement);
+drawTodoList(todoList);
+function drawTodoList(list) {
+    listElement.textContent = '';
+    list
+        .map(createTodoNodeFromTemplate)
+        .forEach(insertTodoElement);
+}
 
 listElement.addEventListener('click', onListClick);
 
 var inputElement = document.querySelector('.add-task__input');
 inputElement.addEventListener('keydown', onInputKeydown);
-
-// Задача:
-// добавить возможность переключения между статусами
 
 function insertTodoElement(elem) {
     if (listElement.children.length) {
@@ -159,7 +161,6 @@ function computeListStats() {
     };
 }
 
-displayListStats();
 function displayListStats() {
     var stats = computeListStats();
     var statisticsContainer = document.querySelector('.statistic');
@@ -167,3 +168,26 @@ function displayListStats() {
     statisticsContainer.querySelector('.statistic__done').textContent = stats.done;
     statisticsContainer.querySelector('.statistic__left').textContent = stats.todo;
 }
+
+function onFiltersClick(event) {
+    filtersElement.querySelector('.filters__item_selected').classList.remove('filters__item_selected');
+    event.target.classList.add('filters__item_selected');
+
+    var filterType = event.target.getAttribute('data-filter');
+    drawTodoList(filterTodoList(filterType));
+}
+
+function filterTodoList(filterType) {
+    return todoList.filter(function(item) {
+        return (filterType === 'all' ||
+                filterType === 'todo' && item.status ||
+                filterType === 'done' && !item.status);
+    });
+}
+
+drawListInfo();
+function drawListInfo() {
+    displayListStats();
+    var filterType = filtersElement.querySelector('.filters__item_selected').getAttribute('data-filter');
+    drawTodoList(filterTodoList(filterType));
+};
