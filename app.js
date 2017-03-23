@@ -119,11 +119,11 @@ var inputElement = document.querySelector('.add-task__input');
 inputElement.addEventListener('keydown', onInputKeydown);
 
 // Задача:
-// исправьте багу с добавлением insertBefore в пустой массив
 // создайте статистику
-//
+// добавить возможность переключения между статусами
+
 function insertTodoElement(elem) {
-    if (listElement.children) {
+    if (listElement.children.length) {
         listElement.insertBefore(elem, listElement.firstElementChild);
     } else {
         listElement.appendChild(elem);
