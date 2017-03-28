@@ -101,126 +101,53 @@ inputElement.addEventListener('keydown', onInputKeydown);
  =            СТАТИСТИКА            =
  ==================================*/
 
-// формируем счетчик статистики
-var stats = {
-    done: 0,
-    todo: 0
+// Перепишите функцию работы со статистикой с использованием прототипов: создайте класс Statistic и методы по управлению статистикой.
+
+function Statistic(todoList, statsBaseClassName) {
+    statsBaseClassName = statsBaseClassName ?
+            '.' + statsBaseClassName : '.statistic';
+    var statsElement = document.querySelector(statsBaseClassName);
+    todoList = todoList || [];
+    var tasksDone = todoList.filter(function (item) {
+        return item.status === 'done';
+    }).length;
+    
+    this.stats = {
+        done: tasksDone,
+        todo: todoList.length - tasksDone
+    };
+
+    this.statsDonelElement = statsElement.querySelector(statsBaseClassName + '__done');
+    this.statsTodoElement = statsElement.querySelector(statsBaseClassName + '__left');
+    this.statsTotalElement = statsElement.querySelector(statsBaseClassName + '__total');
+}
+
+Statistic.prototype.addToStats = function addToStats(isTodo) {
+    isTodo ? this.stats.todo++ : this.stats.done++;
+    this.renderStats();
 };
 
-// необходимые DOM элементы
-var statsElement = document.querySelector('.statistic');
-var statsDonelElement = statsElement.querySelector('.statistic__done');
-var statsTodoElement = statsElement.querySelector('.statistic__left');
-var statsTotalElement = statsElement.querySelector('.statistic__total');
+Statistic.prototype.deleteFromStats = function deleteFromStats(isTodo) {
+    isTodo ? this.stats.todo-- : this.stats.done--;
+    this.renderStats();
+};
 
-// создадим функции работы со статистикой
-/**
- * отрисовывает статистику в DOM
- */
-function renderStats() {
-    statsDonelElement.textContent = stats.done;
-    statsTodoElement.textContent = stats.todo;
-    statsTotalElement.textContent = stats.done + stats.todo;
-}
+Statistic.prototype.changeStats = function changeStats(isTodo) {
+    isTodo ?
+        ++this.stats.todo && --this.stats.done :
+        ++this.stats.done && --this.stats.todo ;
+    this.renderStats();
+};
 
-// теперь на каждое из действий — обновление статистики
-/**
- * добавляет значение к статистике и обновляет DOM
- * @param {boolean} isTodo — статус новой тудушки
- */
-function addToStats(isTodo) {
-    if (isTodo) {
-        stats.todo++;
-    } else {
-        stats.done++;
-    }
-    renderStats();
-}
+Statistic.prototype.renderStats = function renderStats() {
+    this.statsDonelElement.textContent = this.stats.done;
+    this.statsTodoElement.textContent = this.stats.todo;
+    this.statsTotalElement.textContent = this.stats.done + this.stats.todo;
+};
 
-/**
- * измененяет статус тудушки и обновляет DOM
- * @param {boolean} isTodo статус после изменения
- */
-function changeStats(isTodo) {
-    if (isTodo) {
-        stats.todo++;
-        stats.done--;
-    } else {
-        stats.todo--;
-        stats.done++;
-    }
-    renderStats();
-}
+var statisticInstance = new Statistic(todoList);
+statisticInstance.renderStats();
 
-/**
- * отрабатывает удаление тудушки и обновляет DOM
- * @param {boolean} isTodo статус удаленной тудушки
- */
-function deleteFromStats(isTodo) {
-    if (isTodo) {
-        stats.todo--;
-    } else {
-        stats.done--;
-    }
-    renderStats();
-}
-
-// теперь надо переписать старые методы, чтобы учесть статистику
-
-// /**
-//  * вставляет тудушку и обновляет статистику
-//  * @param {TodoItem} todo
-//  */
-// function insertTodoElement(todo) {
-//     var elem = addTodoFromTemplate(todo);
-//     listElement.insertBefore(elem, listElement.firstElementChild);
-//     addToStats(todo.status === 'todo');
-// }
-
-// из-за изменений в insertTodoElement чуть упростили onInputKeydown
-
-// /**
-//  * отслеживает нажатие ENTER пользователем и создает новую тудушку, если такой нет
-//  * @param {KeyboardEvent} event
-//  */
-// function onInputKeydown(event) {
-//
-//     if (event.keyCode !== ENTER_KEYCODE) {
-//         return;
-//     }
-//
-//     var todoName = inputElement.value.trim();
-//
-//     if (todoName.length === 0 || checkIfTodoAlreadyExists(todoName)) {
-//         return;
-//     }
-//
-//     var todo = createNewTodo(todoName);
-//     insertTodoElement(todo);
-//     inputElement.value = '';
-// }
-
-// /**
-//  * изменяет статус тудушки, обновляет статистику
-//  * @param {Element} element
-//  */
-// function changeTodoStatus(element) {
-//     var isTodo = element.classList.contains('task_todo');
-//     setTodoStatusClassName(element, !isTodo);
-//
-//     changeStats(!isTodo);
-// }
-
-// /**
-//  * удаляет тудушку, обновляет статистику
-//  * @param {Element} element
-//  */
-// function deleteTodo(element) {
-//     var isTodo = element.classList.contains('task_todo');
-//     listElement.removeChild(element);
-//
-//     deleteFromStats(isTodo);
-// }
 
 /*==================================
  =            ФИЛЬТРАЦИЯ            =
@@ -369,7 +296,7 @@ function addTodo(name) {
     if (currentFilter !== filterValues.DONE) {
         insertTodoElement(newTask);
     }
-    addToStats(true);
+    statisticInstance.addToStats(true);
 }
 
 // обновление статистики теперь не зависит от того, вставляется ли тудушка в DOM или нет
@@ -380,7 +307,6 @@ function addTodo(name) {
 function insertTodoElement(todo) {
     var elem = addTodoFromTemplate(todo);
     listElement.insertBefore(elem, listElement.firstElementChild);
-    // addToStats(todo.status === 'todo');
 }
 
 // обновим функцию смены статуса тудушки
@@ -405,7 +331,7 @@ function changeTodoStatus(element) {
     }
 
     // и поменять статистику
-    changeStats(!isTodo);
+    statisticInstance.changeStats(!isTodo);
 }
 
 // аналогично при удалении — нужно удалять из todoList
@@ -418,20 +344,8 @@ function deleteTodo(element) {
     var isTodo = task.status === 'todo';
     todoList.splice(todoList.indexOf(task), 1);
     listElement.removeChild(element);
-    deleteFromStats(isTodo);
+    statisticInstance.deleteFromStats(isTodo);
 }
 
 // отрендерим первоначальный список тудушек
 todoList.forEach(insertTodoElement);
-
-// поскольку выпилили статистику из insertTodoElement,
-// нужно посчитать первоначальные значения
-var tasksDone = todoList.filter(function (item) {
-    return item.status === 'done';
-}).length;
-
-stats = {
-    done: tasksDone,
-    todo: todoList.length - tasksDone
-};
-renderStats();
