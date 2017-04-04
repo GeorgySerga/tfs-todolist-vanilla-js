@@ -135,8 +135,18 @@ body {
     color: lightgrey;
 }
 
+.task__time {
+    font-size: 0.7em;
+    display: inline-block;
+    text-decoration: inherit;
+    margin-right: 5px;
+    vertical-align:top;
+}
+
 .task__name {
-    display: block;
+    display: inline-block;
+    vertical-align:top;
+    text-decoration: inherit;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

@@ -36,10 +36,32 @@ var todoList = [
     }
 ];
 
+function getModificationTime() {
+    var modDate = new Date();
+
+    var hours = ('0' + modDate.getHours()).slice(-2);
+    var minutes = ('0' + modDate.getMinutes()).slice(-2);
+    var seconds = ('0' + modDate.getSeconds()).slice(-2);
+    var time = hours + ':' + minutes + ':' + seconds;
+
+    var date = ('0' + modDate.getDate()).slice(-2);
+    var month = ('0' + modDate.getMonth() + 1).slice(-2);
+    var year = String(modDate.getFullYear()).slice(2);
+    var fullDate = date + '/' + month + '/' + year;
+
+    return {
+        time: time,
+        date: fullDate
+    };
+}
+
 // функция по генерации элементов
 function addTodoFromTemplate(todo) {
     var newElement = templateContainer.querySelector('.task').cloneNode(true);
     newElement.querySelector('.task__name').textContent = todo.name;
+    var timeObject = getModificationTime();
+    newElement.querySelector('.task__time-time').textContent = timeObject.time;
+    newElement.querySelector('.task__time-date').textContent = timeObject.date;
     setTodoStatusClassName(newElement, todo.status === 'todo');
 
     return newElement;
@@ -53,9 +75,12 @@ function setTodoStatusClassName(todo, flag) {
 function onListClick(event) {
     var target = event.target;
     var element;
+    var timeObject = getModificationTime();
 
     if (isStatusBtn(target)) {
         element = target.parentNode;
+        element.querySelector('.task__time-time').textContent = timeObject.time;
+        element.querySelector('.task__time-date').textContent = timeObject.date;
         changeTodoStatus(element);
     }
 
